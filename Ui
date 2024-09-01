@@ -1,0 +1,230 @@
+-- UI Library Module
+
+local UI = {}
+UI.__index = UI
+
+-- Create a new UI window
+function UI:CreateWindow()
+    local window = {}
+    setmetatable(window, UI)
+    
+    -- Create the base UI components
+    window.ScreenGui = Instance.new("ScreenGui")
+    window.Frame = Instance.new("Frame")
+    window.ImageLabel = Instance.new("ImageLabel")
+    window.TabMenu = Instance.new("ImageButton")
+    window.TabFrame = Instance.new("Frame")
+    
+    window.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    window.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    window.Frame.Parent = window.ScreenGui
+    window.Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    window.Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    window.Frame.BorderSizePixel = 0
+    window.Frame.Position = UDim2.new(0.168272793, 0, 0.195979893, 0)
+    window.Frame.Size = UDim2.new(0, 800, 0, 510)
+
+    window.ImageLabel.Parent = window.Frame
+    window.ImageLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    window.ImageLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    window.ImageLabel.BorderSizePixel = 0
+    window.ImageLabel.Size = UDim2.new(0, 800, 0, 510)
+    window.ImageLabel.Image = "rbxassetid://15885053459"
+
+    window.TabMenu.Name = "TabMenu"
+    window.TabMenu.Parent = window.ImageLabel
+    window.TabMenu.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    window.TabMenu.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    window.TabMenu.BorderSizePixel = 0
+    window.TabMenu.Size = UDim2.new(0, 104, 0, 82)
+    window.TabMenu.Image = "rbxassetid://96541223"
+
+    window.TabFrame.Name = "TabFrame"
+    window.TabFrame.Parent = window.ImageLabel
+    window.TabFrame.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    window.TabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    window.TabFrame.BorderSizePixel = 0
+    window.TabFrame.Position = UDim2.new(0, 0, 1, 0)
+    window.TabFrame.Size = UDim2.new(0, 312, 0, 428)
+    window.TabFrame.Visible = false
+
+    window.Tabs = {}
+    
+    -- Toggle the TabFrame visibility
+    window.TabMenu.MouseButton1Click:Connect(function()
+        window.TabFrame.Visible = not window.TabFrame.Visible
+    end)
+
+    return window
+end
+
+-- Create a new tab in the TabFrame
+function UI:CreateTab(tabName)
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = tabName
+    tabButton.Parent = self.TabFrame
+    tabButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    tabButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    tabButton.BorderSizePixel = 0
+    tabButton.Size = UDim2.new(0, 312, 0, 50)
+    tabButton.Font = Enum.Font.SourceSans
+    tabButton.Text = tabName
+    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabButton.TextSize = 30
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0.1, 0)
+    UICorner.Parent = tabButton
+
+    local tabContent = Instance.new("Frame")
+    tabContent.Name = tabName .. "Content"
+    tabContent.Parent = self.ImageLabel
+    tabContent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    tabContent.BackgroundTransparency = 1
+    tabContent.BorderSizePixel = 0
+    tabContent.Size = UDim2.new(0, 798, 0, 428)
+    tabContent.Visible = false
+
+    self.Tabs[tabName] = {
+        Button = tabButton,
+        Content = tabContent
+    }
+
+    tabButton.MouseButton1Click:Connect(function()
+        self:SwitchTab(tabName)
+    end)
+
+    return self.Tabs[tabName]
+end
+
+-- Switch to the specified tab
+function UI:SwitchTab(tabName)
+    -- Hide all tab contents
+    for _, tab in pairs(self.Tabs) do
+        tab.Content.Visible = false
+    end
+    -- Show the selected tab content
+    self.TabFrame.Visible = true
+    if self.Tabs[tabName] then
+        self.Tabs[tabName].Content.Visible = true
+    end
+end
+
+-- Create a button in the specified tab
+function UI:CreateButton(tab, params)
+    local button = Instance.new("TextButton")
+    button.Name = params.Name
+    button.Parent = tab.Content
+    button.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    button.BorderSizePixel = 0
+    button.Size = UDim2.new(0, 200, 0, 50)
+    button.Font = Enum.Font.SourceSans
+    button.Text = params.Name
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 30
+    button.MouseButton1Click:Connect(params.Callback)
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0.1, 0)
+    UICorner.Parent = button
+end
+
+-- Create a toggle in the specified tab
+function UI:CreateToggle(tab, params)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Parent = tab.Content
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.Size = UDim2.new(0, 312, 0, 50)
+
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Parent = toggleFrame
+    toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    toggleButton.BorderSizePixel = 0
+    toggleButton.Size = UDim2.new(0, 312, 0, 50)
+    toggleButton.Font = Enum.Font.SourceSans
+    toggleButton.Text = params.Name .. ": OFF"
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.TextSize = 30
+    toggleButton.MouseButton1Click:Connect(function()
+        params.CurrentValue = not params.CurrentValue
+        toggleButton.Text = params.Name .. ": " .. (params.CurrentValue and "ON" or "OFF")
+        params.Callback(params.CurrentValue)
+    end)
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0.1, 0)
+    UICorner.Parent = toggleButton
+end
+
+-- Create a slider in the specified tab
+function UI:CreateSlider(tab, params)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Parent = tab.Content
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderFrame.BorderSizePixel = 0
+    sliderFrame.Size = UDim2.new(0, 312, 0, 100)
+
+    local sliderLabel = Instance.new("TextLabel")
+    sliderLabel.Parent = sliderFrame
+    sliderLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderLabel.BorderSizePixel = 0
+    sliderLabel.Size = UDim2.new(0, 312, 0, 50)
+    sliderLabel.Font = Enum.Font.SourceSans
+    sliderLabel.Text = params.Name .. ": " .. params.CurrentValue .. " " .. params.Suffix
+    sliderLabel.TextColor3 = Color3.fromRGB(0, 0, 0)
+    sliderLabel.TextSize = 30
+
+    local sliderButton = Instance.new("TextButton")
+    sliderButton.Parent = sliderFrame
+    sliderButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    sliderButton.BorderSizePixel = 0
+    sliderButton.Size = UDim2.new(0, 312, 0, 50)
+    sliderButton.Text = "Slide"
+    sliderButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sliderButton.TextSize = 30
+    sliderButton.MouseButton1Click:Connect(function()
+        local newValue = math.random(params.Range[1], params.Range[2])
+        params.Callback(newValue)
+        sliderLabel.Text = params.Name .. ": " .. newValue .. " " .. params.Suffix
+    end)
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0.1, 0)
+    UICorner.Parent = sliderButton
+end
+
+-- Create a dropdown in the specified tab
+function UI:CreateDropdown(tab, params)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Parent = tab.Content
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownFrame.BorderSizePixel = 0
+    dropdownFrame.Size = UDim2.new(0, 312, 0, 50)
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Parent = dropdownFrame
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    dropdownButton.BorderSizePixel = 0
+    dropdownButton.Size = UDim2.new(0, 312, 0, 50)
+    dropdownButton.Font = Enum.Font.SourceSans
+    dropdownButton.Text = params.CurrentOption[1]
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.TextSize = 30
+    dropdownButton.MouseButton1Click:Connect(function()
+        local options = params.Options
+        local currentOption = params.CurrentOption[1]
+        local newOption = options[(table.find(options, currentOption) % #options) + 1]
+        params.CurrentOption = {newOption}
+        dropdownButton.Text = newOption
+        params.Callback({newOption})
+    end)
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0.1, 0)
+    UICorner.Parent = dropdownButton
+end
+
+return UI
